@@ -18,7 +18,6 @@ package org.gradle.caching.internal.tasks;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -29,7 +28,6 @@ import org.gradle.api.file.RelativePath;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.changedetection.TaskArtifactState;
-import org.gradle.api.internal.changedetection.state.CollectingFileCollectionSnapshotBuilder;
 import org.gradle.api.internal.changedetection.state.DirectoryTreeDetails;
 import org.gradle.api.internal.changedetection.state.EmptyFileCollectionSnapshot;
 import org.gradle.api.internal.changedetection.state.FileCollectionSnapshot;
@@ -37,7 +35,7 @@ import org.gradle.api.internal.changedetection.state.FileContentSnapshot;
 import org.gradle.api.internal.changedetection.state.FileSnapshot;
 import org.gradle.api.internal.changedetection.state.FileSystemMirror;
 import org.gradle.api.internal.changedetection.state.MissingFileSnapshot;
-import org.gradle.api.internal.changedetection.state.OutputPathNormalizationStrategy;
+import org.gradle.api.internal.changedetection.state.mirror.logical.RootsFileCollectionSnapshot;
 import org.gradle.api.internal.tasks.OriginTaskExecutionMetadata;
 import org.gradle.api.internal.tasks.ResolvedTaskOutputFilePropertySpec;
 import org.gradle.api.internal.tasks.execution.TaskOutputChangesListener;
@@ -54,13 +52,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-
-import static org.gradle.api.internal.changedetection.state.TaskFilePropertyCompareStrategy.UNORDERED;
 
 public class TaskOutputCacheCommandFactory {
 
@@ -161,11 +156,11 @@ public class TaskOutputCacheCommandFactory {
                 }
                 List<FileSnapshot> fileSnapshots = propertiesFileSnapshots.get(propertyName);
 
-                CollectingFileCollectionSnapshotBuilder builder = new CollectingFileCollectionSnapshotBuilder(UNORDERED, OutputPathNormalizationStrategy.getInstance(), stringInterner);
+                ImmutableSortedMap.Builder<String, FileContentSnapshot> builder = ImmutableSortedMap.naturalOrder();
                 for (FileSnapshot fileSnapshot : fileSnapshots) {
-                    builder.collectFile(Paths.get(fileSnapshot.getPath()), ImmutableList.<String>of(), fileSnapshot.getContent());
+                    builder.put(fileSnapshot.getPath(), fileSnapshot.getContent());
                 }
-                propertySnapshotsBuilder.put(propertyName, builder.build());
+                propertySnapshotsBuilder.put(propertyName, new RootsFileCollectionSnapshot(builder.build(), null));
 
                 String absolutePath = internedAbsolutePath(outputFile);
                 switch (property.getOutputType()) {

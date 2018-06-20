@@ -19,6 +19,7 @@ package org.gradle.api.internal.changedetection.state;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.changedetection.state.mirror.VisitableDirectoryTree;
+import org.gradle.api.internal.changedetection.state.mirror.logical.RootsFileCollectionSnapshot;
 import org.gradle.api.internal.file.FileCollectionInternal;
 import org.gradle.api.internal.file.FileCollectionVisitor;
 import org.gradle.api.internal.file.FileTreeInternal;
@@ -45,6 +46,7 @@ public abstract class AbstractFileCollectionSnapshotter implements FileCollectio
 
     public void registerSerializers(SerializerRegistry registry) {
         registry.register(DefaultFileCollectionSnapshot.class, new DefaultFileCollectionSnapshot.SerializerImpl(stringInterner));
+        registry.register(RootsFileCollectionSnapshot.class, new RootsFileCollectionSnapshot.SerializerImpl(stringInterner));
         registry.register(EmptyFileCollectionSnapshot.class, Serializers.constant(EmptyFileCollectionSnapshot.INSTANCE));
     }
 

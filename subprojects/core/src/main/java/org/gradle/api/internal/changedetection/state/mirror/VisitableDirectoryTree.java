@@ -18,4 +18,5 @@ package org.gradle.api.internal.changedetection.state.mirror;
 
 public interface VisitableDirectoryTree {
     void visit(PhysicalFileTreeVisitor visitor);
+    void accept(HierarchicalFileTreeVisitor visitor);
 }

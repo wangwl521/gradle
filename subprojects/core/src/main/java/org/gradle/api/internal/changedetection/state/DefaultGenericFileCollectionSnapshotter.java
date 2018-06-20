@@ -18,6 +18,7 @@ package org.gradle.api.internal.changedetection.state;
 
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.cache.StringInterner;
+import org.gradle.api.internal.changedetection.state.mirror.logical.RootFileCollectionSnapshotBuilder;
 import org.gradle.api.internal.file.collections.DirectoryFileTreeFactory;
 import org.gradle.api.internal.tasks.GenericFileNormalizer;
 import org.gradle.api.tasks.FileNormalizer;
@@ -35,6 +36,7 @@ public class DefaultGenericFileCollectionSnapshotter extends AbstractFileCollect
 
     @Override
     public FileCollectionSnapshot snapshot(FileCollection files, PathNormalizationStrategy pathNormalizationStrategy, InputNormalizationStrategy inputNormalizationStrategy) {
-        return super.snapshot(files, new FileCollectionVisitingSnapshotBuilder(new CollectingFileCollectionSnapshotBuilder(TaskFilePropertyCompareStrategy.UNORDERED, pathNormalizationStrategy, getStringInterner())));
+        VisitingFileCollectionSnapshotBuilder builder = (pathNormalizationStrategy == OutputPathNormalizationStrategy.getInstance()) ? new RootFileCollectionSnapshotBuilder() : new FileCollectionVisitingSnapshotBuilder(new CollectingFileCollectionSnapshotBuilder(TaskFilePropertyCompareStrategy.UNORDERED, pathNormalizationStrategy, getStringInterner()));
+        return super.snapshot(files, builder);
     }
 }

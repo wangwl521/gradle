@@ -17,6 +17,7 @@
 package org.gradle.api.internal.changedetection.state;
 
 import org.gradle.api.NonNullApi;
+import org.gradle.api.internal.changedetection.state.mirror.HierarchicalFileTreeVisitor;
 import org.gradle.api.internal.changedetection.state.mirror.PhysicalFileTreeVisitor;
 
 import java.nio.file.Paths;
@@ -58,5 +59,10 @@ public class DirectoryTreeDetails implements FileTreeSnapshot {
         for (FileSnapshot descendant : descendants) {
             visitor.visit(Paths.get(descendant.getPath()), path, descendant.getName(), descendant.getRelativePath(), descendant.getContent());
         }
+    }
+
+    @Override
+    public void accept(HierarchicalFileTreeVisitor visitor) {
+        throw new UnsupportedOperationException("DirectoryTreeDetails are not supported yet!");
     }
 }

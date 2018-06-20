@@ -56,4 +56,13 @@ public abstract class AbstractPhysicalDirectorySnapshot implements PhysicalSnaps
     public void visitSelf(PhysicalFileVisitor visitor, Deque<String> relativePath) {
         visitor.visit(getPath(), getName(), relativePath, DirContentSnapshot.INSTANCE);
     }
+
+    @Override
+    public void accept(HierarchicalFileTreeVisitor visitor) {
+        visitor.preVisitDirectory(path, name);
+        for (PhysicalSnapshot child : getChildren()) {
+            child.accept(visitor);
+        }
+        visitor.postVisitDirectory();
+    }
 }

@@ -30,6 +30,10 @@ public class PhysicalSnapshotBackedVisitableTree implements VisitableDirectoryTr
         @Override
         public void visit(PhysicalFileTreeVisitor visitor) {
         }
+
+        @Override
+        public void accept(HierarchicalFileTreeVisitor visitor) {
+        }
     };
 
     public PhysicalSnapshotBackedVisitableTree(String path, PhysicalSnapshot rootDirectory) {
@@ -45,5 +49,10 @@ public class PhysicalSnapshotBackedVisitableTree implements VisitableDirectoryTr
                 visitor.visit(path, basePath, name, relativePath, content);
             }
         }, new ArrayDeque<String>());
+    }
+
+    @Override
+    public void accept(HierarchicalFileTreeVisitor visitor) {
+        rootDirectory.accept(visitor);
     }
 }

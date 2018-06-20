@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package org.gradle.api.internal.changedetection.state.mirror;
+package org.gradle.api.internal.changedetection.state.mirror.logical;
 
-import java.nio.file.Path;
-import java.util.Deque;
+import org.gradle.api.internal.changedetection.state.FileContentSnapshot;
 
-@SuppressWarnings("Since15")
-public interface PhysicalSnapshot {
-    Path getPath();
+public interface LogicalSnapshot {
     String getName();
-    PhysicalSnapshot add(String[] segments, int offset, PhysicalSnapshot snapshot);
-
-    void visitTree(PhysicalFileVisitor visitor, Deque<String> relativePath);
-    void visitSelf(PhysicalFileVisitor visitor, Deque<String> relativePath);
-    void accept(HierarchicalFileTreeVisitor visitor);
+    FileContentSnapshot getContent();
+    void accept(HierarchicalSnapshotVisitor visitor);
 }

@@ -16,16 +16,15 @@
 
 package org.gradle.api.internal.changedetection.state.mirror;
 
+import org.gradle.api.internal.changedetection.state.FileContentSnapshot;
+
 import java.nio.file.Path;
-import java.util.Deque;
 
-@SuppressWarnings("Since15")
-public interface PhysicalSnapshot {
-    Path getPath();
-    String getName();
-    PhysicalSnapshot add(String[] segments, int offset, PhysicalSnapshot snapshot);
+public interface HierarchicalFileTreeVisitor {
 
-    void visitTree(PhysicalFileVisitor visitor, Deque<String> relativePath);
-    void visitSelf(PhysicalFileVisitor visitor, Deque<String> relativePath);
-    void accept(HierarchicalFileTreeVisitor visitor);
+    void preVisitDirectory(Path path, String name);
+
+    void visit(Path path, String name, FileContentSnapshot content);
+
+    void postVisitDirectory();
 }

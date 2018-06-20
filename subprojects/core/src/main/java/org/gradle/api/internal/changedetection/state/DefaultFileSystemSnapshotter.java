@@ -26,6 +26,7 @@ import org.gradle.api.file.FileVisitor;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.changedetection.state.mirror.FileSnapshotHelper;
+import org.gradle.api.internal.changedetection.state.mirror.HierarchicalFileTreeVisitor;
 import org.gradle.api.internal.changedetection.state.mirror.ImmutablePhysicalDirectorySnapshot;
 import org.gradle.api.internal.changedetection.state.mirror.MirrorUpdatingDirectoryWalker;
 import org.gradle.api.internal.changedetection.state.mirror.PhysicalFileTreeVisitor;
@@ -51,6 +52,7 @@ import org.gradle.normalization.internal.InputNormalizationStrategy;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -192,6 +194,11 @@ public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
                     }
                 });
             }
+
+            @Override
+            public void accept(HierarchicalFileTreeVisitor visitor) {
+                throw new UnsupportedOperationException("Arbitrary FileTreeInternals are not supported yet");
+            }
         };
     }
 
@@ -207,6 +214,11 @@ public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
                 @Override
                 public void visit(PhysicalFileTreeVisitor visitor) {
                     visitor.visit(Paths.get(fileSnapshot.getPath()), path, fileSnapshot.getName(), ImmutableList.of(fileSnapshot.getName()), fileSnapshot.getContent());
+                }
+
+                @Override
+                public void accept(HierarchicalFileTreeVisitor visitor) {
+                    visitor.visit(Paths.get(fileSnapshot.getPath()), fileSnapshot.getName(), fileSnapshot.getContent());
                 }
             };
         }
@@ -242,6 +254,32 @@ public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
                         if (spec.isSatisfiedBy(new SnapshotFileTreeElement(FileSnapshotHelper.create(path, relativePath, content), fileSystem))) {
                             visitor.visit(path, basePath, name, relativePath, content);
                         }
+                    }
+                });
+            }
+
+            @Override
+            public void accept(final HierarchicalFileTreeVisitor visitor) {
+                snapshot.accept(new HierarchicalFileTreeVisitor() {
+                    private Deque<String> relativePath = Lists.newLinkedList();
+
+                    @Override
+                    public void preVisitDirectory(Path path, String name) {
+                        relativePath.addLast(name);
+                        visitor.preVisitDirectory(path, name);
+                    }
+
+                    @Override
+                    public void visit(Path path, String name, FileContentSnapshot content) {
+                        if (spec.isSatisfiedBy(new SnapshotFileTreeElement(FileSnapshotHelper.create(path, relativePath, content), fileSystem))) {
+                            visitor.visit(path, name, content);
+                        }
+                    }
+
+                    @Override
+                    public void postVisitDirectory() {
+                        relativePath.removeLast();
+                        visitor.postVisitDirectory();
                     }
                 });
             }
